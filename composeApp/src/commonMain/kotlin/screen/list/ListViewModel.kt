@@ -3,32 +3,30 @@ package screen.list
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.CreationExtras
 import data.ClientHolder
 import data.getAllRockets
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlin.reflect.KClass
 
-val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
-    throwable.printStackTrace()
-    println("error: ${throwable.message}")
+class ListViewModelFactory : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T {
+        return ListViewModel() as T
+    }
 }
 
-class ListViewModel(
-    coroutineScope: CoroutineScope = CoroutineScope(
-        Dispatchers.Main + SupervisorJob() + exceptionHandler
-    )
-) {
+class ListViewModel : ViewModel() {
 
     private val _state: MutableState<RocketState> = mutableStateOf(RocketState.Loading)
     val state: State<RocketState> get() = _state
 
     init {
-        coroutineScope.launch(exceptionHandler) {
+        viewModelScope.launch {
             _state.value = RocketState.Loading
-            val httpClient = ClientHolder.client
+            val httpClient = ClientHolder.httpClient
             _state.value = runCatching {
                 val rockets = getAllRockets(httpClient)
                 RocketState.Success(rockets)

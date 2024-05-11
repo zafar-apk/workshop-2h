@@ -11,5 +11,9 @@ data class Rocket(
     @SerialName("description")
     val description: String?,
     @SerialName("rocket_name")
-    val rocketName: String?
-)
+    val rocketName: String?,
+    @SerialName("flickr_images")
+    val flickrImages: List<String>
+) {
+    fun getFirstImageOrNull(): String? = flickrImages.firstOrNull()
+}
